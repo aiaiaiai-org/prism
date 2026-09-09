@@ -31,7 +31,7 @@ impl Extensions {
         self.0.iter()
     }
 
-    /// Returns whether the map is empty.
+    /// Returns whether the map has no entries.
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
@@ -135,6 +135,8 @@ pub struct Media {
 pub enum PublicationFormat {
     /// Standard feed or channel post.
     Post,
+    /// Recipient-addressed message.
+    Message,
     /// Ephemeral story-like surface.
     Story,
     /// Short-form video surface.

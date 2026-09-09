@@ -6,15 +6,27 @@ This document separates behavior implemented in Prism from behavior that is plan
 
 | Surface | Current behavior |
 | --- | --- |
-| `prism-core` | Content variants, capabilities, requests, validation, outcomes, receipts, and events |
+| `prism-core` | Content variants, capabilities, requests, validation, outcomes, receipts, events, and portable post/message surfaces |
 | `prism-provider` | Async provider adapter contract and deterministic registry |
 | `prism-provider-threads` | Text-only official Threads adapter with injected binding resolution and HTTPS transport |
+| `prism-provider-meta` | Instagram single-image feed, Facebook Page text, and WhatsApp individual text-message adapters with injected bindings/transports |
 | `prism-protocol` | `prism-execution.v1` request/response envelopes and generated JSON Schema |
 | `prism-runtime` | Stateless `capabilities`, `validate`, and `publish` operations over JSON/NDJSON |
 | `prism-testkit` | Test provider, safe call recording, and adapter conformance helpers |
 | `xtask` | Contract generation, schema drift checks, and repository policy checks |
 
-The Threads adapter can call the official production API only when an application supplies a binding resolver and transport. Required CI supplies neither live credentials nor a live target.
+The live adapters can call official production APIs only when an application supplies the required bindings and transport/media resolution. Required CI supplies no live credentials or targets.
+
+## Meta provider family
+
+| Provider | Implemented v1 capability |
+| --- | --- |
+| Threads | text feed post |
+| Instagram | exactly one image feed post with optional caption |
+| Facebook | Page text feed post |
+| WhatsApp | individual Business Platform text message |
+
+WhatsApp uses `PublicationFormat::Message`, not `Post`: it is recipient-addressed messaging rather than a feed publication. The configured channel binding owns the recipient relationship.
 
 ## Execution
 
@@ -48,7 +60,7 @@ Prism does not promise cross-provider atomicity.
 - adapters may map or hash that material to provider limits;
 - Prism has no durable deduplication store or retry scheduler.
 
-Threads does not expose native idempotency for the implemented publish path. If the final publish result is ambiguous, Prism returns `outcome_unknown` with safe recovery details. The caller must reconcile provider state before retry.
+The implemented Meta publish paths do not claim native idempotency. If a final external action returns an ambiguous outcome, Prism returns `outcome_unknown`; callers must reconcile provider state before retrying. Instagram container creation is distinct because it does not make content public and may be retried safely under the adapter contract.
 
 ## Security
 
@@ -58,8 +70,10 @@ Threads does not expose native idempotency for the implemented publish path. If 
 - stdout is reserved for protocol envelopes;
 - diagnostics use stderr without request payloads;
 - provider adapters own secret resolution and upstream redaction;
-- the Threads token wrapper is non-serializable and redacted in debug output;
-- Threads requests use HTTPS bearer authorization.
+- Meta token wrappers are non-serializable and redacted in debug output;
+- signed Instagram media URLs are redacted in debug output;
+- provider requests require HTTPS bearer authorization;
+- WhatsApp recipients are resolved through channel bindings, not arbitrary request options.
 
 ## Verification
 
@@ -70,33 +84,34 @@ Full CI runs formatting, Clippy with warnings denied, workspace tests, generated
 Prism does not currently provide:
 
 - Threads image, video, carousel, poll, reply, or provider-specific option publishing;
-- Instagram, X, Telegram, Mastodon, or other live provider adapters;
-- OAuth flows, token storage, or a production credential resolver;
-- media fetching, transformation, upload, or durable storage;
+- Instagram video, carousel, story, Reel, or alt-text preservation;
+- Facebook Page image/video/Reels publishing or personal-profile posting;
+- WhatsApp templates, media, groups, broadcasts, Status publishing, or general conversation orchestration;
+- X, Telegram, Mastodon, or other non-Meta live provider adapters;
+- OAuth flows, token storage/refresh, account discovery, or production credential persistence;
+- general media fetching, transformation, upload, or durable storage;
 - retries, backoff, scheduling, queues, or durable idempotency records;
 - accounts, workspaces, approvals, audit history, or reporting;
 - a remote HTTP service or daemon lifecycle;
 - deployment artifacts or hosted infrastructure.
 
-The control plane, ai generation, and clients belong to separate Prism repositories. Their implementation state is tracked there, not here.
+The control plane, ai generation, OAuth/account lifecycle and clients belong to separate Prism repositories. Their implementation state is tracked there, not here.
 
 ## Next Prism increments
 
-1. Run the controlled Threads live-validation workflow and record evidence.
-2. Add Threads image, video, and carousel support with media resolution and recovery behavior.
-3. Add provider-specific options only through namespaced fields with proven semantics.
-4. Add another provider as a separate adapter once its boundary is proven.
-
-Instagram may reuse private Meta transport/auth helpers, but its provider adapter and product semantics remain separate from Threads.
+1. Run controlled live validation for each configured Meta provider and record evidence.
+2. Extend Threads and Instagram media capability only when media-resolution and recovery semantics stay explicit.
+3. Add Facebook media surfaces and WhatsApp templates/media as independent capability increments.
+4. Add a non-Meta provider to prove the provider-neutral boundary beyond one vendor family.
 
 ## Deferred decisions
 
-- next provider after the Meta proof;
+- first non-Meta provider;
 - public crate names and crates.io publication policy;
 - daemon, Unix socket, or HTTP runtime transport;
 - delivery concurrency and retry semantics;
 - optional developer CLI.
 
-See [`architecture.md`](architecture.md), [`content-variants.md`](content-variants.md), [`engineering-principles.md`](engineering-principles.md), [`protocol.md`](protocol.md), and [`roadmap.md`](roadmap.md).
+See [`architecture.md`](architecture.md), [`content-variants.md`](content-variants.md), [`engineering-principles.md`](engineering-principles.md), [`protocol.md`](protocol.md), [`providers/meta.md`](providers/meta.md), and [`roadmap.md`](roadmap.md).
 
 <!-- © 2026 aiaiaiai · aiaiaiai.org -->
