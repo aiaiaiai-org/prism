@@ -9,13 +9,13 @@ This document separates behavior implemented in Prism from behavior that is plan
 | `prism-core` | Content variants, capabilities, requests, validation, outcomes, receipts, events, and portable post/message surfaces |
 | `prism-provider` | Async provider adapter contract and deterministic registry |
 | `prism-provider-threads` | Text-only official Threads adapter with injected binding resolution and HTTPS transport |
-| `prism-provider-meta` | Instagram single-image feed, Facebook Page text, and WhatsApp individual text-message adapters with injected bindings/transports |
+| `prism-provider-meta` | Instagram single-image feed, Facebook Page text, WhatsApp direct-message, and target-specific WhatsApp Channel text-post boundaries |
 | `prism-protocol` | `prism-execution.v1` request/response envelopes and generated JSON Schema |
 | `prism-runtime` | Stateless `capabilities`, `validate`, and `publish` operations over JSON/NDJSON |
 | `prism-testkit` | Test provider, safe call recording, and adapter conformance helpers |
 | `xtask` | Contract generation, schema drift checks, and repository policy checks |
 
-The live adapters can call official production APIs only when an application supplies the required bindings and transport/media resolution. Required CI supplies no live credentials or targets.
+The live adapters can call official production APIs only when an application supplies the required bindings and transport/media resolution. Required CI supplies no live credentials or targets. WhatsApp Channel posts are the exception to the official-API statement: the Prism capability exists behind an injected publisher because Meta does not currently document a Cloud API Channels publishing endpoint.
 
 ## Meta provider family
 
@@ -24,9 +24,11 @@ The live adapters can call official production APIs only when an application sup
 | Threads | text feed post |
 | Instagram | exactly one image feed post with optional caption |
 | Facebook | Page text feed post |
-| WhatsApp | individual Business Platform text message |
+| WhatsApp | individual Business Platform text message or text Channel update, selected by target |
 
-WhatsApp uses `PublicationFormat::Message`, not `Post`: it is recipient-addressed messaging rather than a feed publication. The configured channel binding owns the recipient relationship.
+WhatsApp keeps both portable surfaces under `meta.whatsapp`. An individual target advertises `PublicationFormat::Message`; a Channel target advertises `PublicationFormat::Post`. `WhatsAppDestinationResolver` derives that target kind from the configured opaque `ChannelRef`, not from request content or provider options.
+
+Direct messages use the official WhatsApp Cloud API messages transport. Channel posts use an injected `WhatsAppChannelPublisher`; this boundary can be backed by a controlled integration now and replaced by an official Meta implementation later without changing the Prism contract.
 
 ## Execution
 
@@ -60,7 +62,7 @@ Prism does not promise cross-provider atomicity.
 - adapters may map or hash that material to provider limits;
 - Prism has no durable deduplication store or retry scheduler.
 
-The implemented Meta publish paths do not claim native idempotency. If a final external action returns an ambiguous outcome, Prism returns `outcome_unknown`; callers must reconcile provider state before retrying. Instagram container creation is distinct because it does not make content public and may be retried safely under the adapter contract.
+The implemented Meta publish paths do not claim native idempotency. If a final external action returns an ambiguous outcome, Prism returns `outcome_unknown`; callers must reconcile provider state before retrying. Instagram container creation is distinct because it does not make content public and may be retried safely under the adapter contract. Injected WhatsApp Channel publishers must preserve the same ambiguity rule.
 
 ## Security
 
@@ -73,7 +75,7 @@ The implemented Meta publish paths do not claim native idempotency. If a final e
 - Meta token wrappers are non-serializable and redacted in debug output;
 - signed Instagram media URLs are redacted in debug output;
 - provider requests require HTTPS bearer authorization;
-- WhatsApp recipients are resolved through channel bindings, not arbitrary request options.
+- WhatsApp recipients and Channel routing are resolved from configured channel bindings, not arbitrary request options.
 
 ## Verification
 
@@ -86,7 +88,8 @@ Prism does not currently provide:
 - Threads image, video, carousel, poll, reply, or provider-specific option publishing;
 - Instagram video, carousel, story, Reel, or alt-text preservation;
 - Facebook Page image/video/Reels publishing or personal-profile posting;
-- WhatsApp templates, media, groups, broadcasts, Status publishing, or general conversation orchestration;
+- WhatsApp templates, direct-message media, groups, broadcasts, Status publishing, or general conversation orchestration;
+- WhatsApp Channel media, polls, edit/delete, metrics, or an official Cloud API Channel transport;
 - X, Telegram, Mastodon, or other non-Meta live provider adapters;
 - OAuth flows, token storage/refresh, account discovery, or production credential persistence;
 - general media fetching, transformation, upload, or durable storage;
@@ -100,9 +103,10 @@ The control plane, ai generation, OAuth/account lifecycle and clients belong to 
 ## Next Prism increments
 
 1. Run controlled live validation for each configured Meta provider and record evidence.
-2. Extend Threads and Instagram media capability only when media-resolution and recovery semantics stay explicit.
-3. Add Facebook media surfaces and WhatsApp templates/media as independent capability increments.
-4. Add a non-Meta provider to prove the provider-neutral boundary beyond one vendor family.
+2. Add a concrete controlled WhatsApp Channel publisher integration, while keeping it outside the official Cloud API transport until Meta documents one.
+3. Extend Threads and Instagram media capability only when media-resolution and recovery semantics stay explicit.
+4. Add Facebook media surfaces and WhatsApp templates/media as independent capability increments.
+5. Add a non-Meta provider to prove the provider-neutral boundary beyond one vendor family.
 
 ## Deferred decisions
 
