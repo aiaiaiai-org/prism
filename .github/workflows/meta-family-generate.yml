@@ -1,0 +1,43 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+name: Meta family generated artifacts
+
+on:
+  push:
+    branches: [feature/meta-provider-family]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate lockfile
+        run: cargo generate-lockfile
+
+      - name: Generate protocol contracts
+        run: cargo run -p xtask -- write
+
+      - name: Commit generated artifacts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git add Cargo.lock contracts/prism-execution.v1.request.schema.json contracts/prism-execution.v1.response.schema.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "Update generated Meta provider artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}
