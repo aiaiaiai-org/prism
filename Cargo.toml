@@ -5,6 +5,7 @@
 members = [
   "crates/prism-core",
   "crates/prism-provider",
+  "crates/prism-provider-meta",
   "crates/prism-provider-threads",
   "crates/prism-protocol",
   "crates/prism-runtime",
