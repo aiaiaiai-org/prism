@@ -109,10 +109,7 @@ impl ReqwestInstagramTransport {
     }
 
     /// Creates a transport with an explicit HTTPS API base.
-    pub fn with_api_base(
-        client: Client,
-        api_base: &str,
-    ) -> Result<Self, MetaTransportConfigError> {
+    pub fn with_api_base(client: Client, api_base: &str) -> Result<Self, MetaTransportConfigError> {
         Ok(Self {
             client,
             api_base: validated_api_base(api_base)?,
@@ -352,7 +349,9 @@ impl ProviderAdapter for InstagramAdapter {
     }
 }
 
-async fn parse_id_response(response: reqwest::Response) -> Result<MetaExternalId, MetaTransportError> {
+async fn parse_id_response(
+    response: reqwest::Response,
+) -> Result<MetaExternalId, MetaTransportError> {
     let status = response.status();
     let retry_after = response
         .headers()
@@ -379,7 +378,12 @@ async fn parse_id_response(response: reqwest::Response) -> Result<MetaExternalId
             )
         });
     }
-    Err(classify_graph_error("instagram", status, &body, retry_after))
+    Err(classify_graph_error(
+        "instagram",
+        status,
+        &body,
+        retry_after,
+    ))
 }
 
 #[derive(Deserialize)]
@@ -405,7 +409,10 @@ fn map_error(
         MetaTransportErrorKind::RateLimited => DeliveryErrorClass::RateLimited,
         MetaTransportErrorKind::Rejected => DeliveryErrorClass::ProviderRejected,
         MetaTransportErrorKind::Transient | MetaTransportErrorKind::InvalidResponse
-            if public_stage => DeliveryErrorClass::OutcomeUnknown,
+            if public_stage =>
+        {
+            DeliveryErrorClass::OutcomeUnknown
+        }
         MetaTransportErrorKind::Transient | MetaTransportErrorKind::InvalidResponse => {
             DeliveryErrorClass::Retryable
         }

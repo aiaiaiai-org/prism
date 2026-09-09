@@ -12,11 +12,11 @@ pub mod facebook;
 pub mod instagram;
 pub mod whatsapp;
 
-pub(crate) use common::{classify_graph_error, validated_api_base};
 pub use common::{
     MetaAccessToken, MetaExternalId, MetaNumericId, MetaTransportConfigError, MetaTransportError,
     MetaTransportErrorKind, MetaValueError, PublicMediaUrl,
 };
+pub(crate) use common::{classify_graph_error, validated_api_base};
 
 pub use facebook::{
     FACEBOOK_PROVIDER_ID, FacebookAdapter, FacebookBinding, FacebookBindingResolver,
@@ -27,6 +27,6 @@ pub use instagram::{
     InstagramMediaResolver, InstagramTransport, ReqwestInstagramTransport,
 };
 pub use whatsapp::{
-    WHATSAPP_PROVIDER_ID, ReqwestWhatsAppTransport, WhatsAppAdapter, WhatsAppBinding,
+    ReqwestWhatsAppTransport, WHATSAPP_PROVIDER_ID, WhatsAppAdapter, WhatsAppBinding,
     WhatsAppBindingResolver, WhatsAppRecipient, WhatsAppTransport,
 };

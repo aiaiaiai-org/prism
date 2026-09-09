@@ -65,7 +65,9 @@ impl MetaExternalId {
         let value = value.into();
         if value.is_empty()
             || value.len() > 512
-            || value.chars().any(|character| character.is_control() || character.is_whitespace())
+            || value
+                .chars()
+                .any(|character| character.is_control() || character.is_whitespace())
         {
             return Err(MetaValueError::InvalidExternalId);
         }

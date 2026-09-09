@@ -130,10 +130,7 @@ impl ReqwestWhatsAppTransport {
     }
 
     /// Creates a transport with an explicit HTTPS Graph API base.
-    pub fn with_api_base(
-        client: Client,
-        api_base: &str,
-    ) -> Result<Self, MetaTransportConfigError> {
+    pub fn with_api_base(client: Client, api_base: &str) -> Result<Self, MetaTransportConfigError> {
         Ok(Self {
             client,
             api_base: validated_api_base(api_base)?,
