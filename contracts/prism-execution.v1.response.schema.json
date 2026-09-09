@@ -559,6 +559,11 @@
           "const": "post"
         },
         {
+          "description": "Recipient-addressed message.",
+          "type": "string",
+          "const": "message"
+        },
+        {
           "description": "Ephemeral story-like surface.",
           "type": "string",
           "const": "story"
