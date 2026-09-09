@@ -1,0 +1,48 @@
+# © 2026 aiaiaiai · aiaiaiai.org
+# SPDX-License-Identifier: Apache-2.0
+
+name: Format WhatsApp once
+
+on:
+  push:
+    branches:
+      - feature/whatsapp-channel-post
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.head_commit.message != 'Apply canonical rustfmt'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: feature/whatsapp-channel-post
+
+      - name: Install Rust formatter
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Apply canonical formatter
+        run: cargo fmt --all
+
+      - name: Verify formatter scope
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          changed="$(git diff --name-only)"
+          test "$changed" = "crates/prism-provider-meta/src/whatsapp.rs"
+
+      - name: Commit formatted source
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add crates/prism-provider-meta/src/whatsapp.rs
+          git commit -m "Apply canonical rustfmt"
+          git push
