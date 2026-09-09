@@ -28,5 +28,6 @@ pub use instagram::{
 };
 pub use whatsapp::{
     ReqwestWhatsAppTransport, WHATSAPP_PROVIDER_ID, WhatsAppAdapter, WhatsAppBinding,
-    WhatsAppBindingResolver, WhatsAppRecipient, WhatsAppTransport,
+    WhatsAppBindingResolver, WhatsAppChannelPublisher, WhatsAppDestinationKind,
+    WhatsAppDestinationResolver, WhatsAppRecipient, WhatsAppTransport,
 };

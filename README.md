@@ -24,7 +24,7 @@ Prism does not own accounts, OAuth lifecycle, scheduling, persistence, client UI
 | `prism-core` | Content variants, capabilities, requests, outcomes, and errors |
 | `prism-provider` | Provider adapter contract and registry |
 | `prism-provider-threads` | Official Threads text adapter |
-| `prism-provider-meta` | Instagram single-image feed, Facebook Page text, and WhatsApp individual text-message adapters |
+| `prism-provider-meta` | Instagram single-image feed, Facebook Page text, WhatsApp direct-message, and WhatsApp Channel text-post boundaries |
 | `prism-protocol` | `prism-execution.v1` envelopes and JSON Schema |
 | `prism-runtime` | Stateless preflight and dispatch over JSON/NDJSON |
 | `prism-testkit` | Test provider and conformance helpers |
@@ -64,7 +64,7 @@ See [`docs/ecosystem.md`](docs/ecosystem.md) for the complete dependency directi
 
 ## Status
 
-Prism is pre-1.0. The deterministic execution foundation and four Meta provider boundaries are implemented: Threads text posts, Instagram single-image feed posts, Facebook Page text posts, and WhatsApp Business individual text messages. Live use still requires application-supplied bindings, credentials, media resolution where applicable, and provider-side account/app approval.
+Prism is pre-1.0. The deterministic execution foundation and four Meta product boundaries are implemented: Threads text posts, Instagram single-image feed posts, Facebook Page text posts, and WhatsApp with destination-specific direct-message or Channel-post semantics. Direct messages use the official WhatsApp Cloud API transport. Channel posts use an explicit injected publisher boundary until Meta exposes a documented Channels publishing API. Live use still requires application-supplied bindings, credentials, media resolution where applicable, and provider-side account/app approval.
 
 Wire and crate APIs follow semantic versioning. Protocol versions are independent from binary versions.
 
