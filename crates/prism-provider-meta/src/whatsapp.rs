@@ -340,9 +340,7 @@ impl WhatsAppAdapter {
                 WhatsAppDestinationKind::Individual => {
                     "WhatsApp individual recipients require message format"
                 }
-                WhatsAppDestinationKind::Channel => {
-                    "WhatsApp Channels require post format"
-                }
+                WhatsAppDestinationKind::Channel => "WhatsApp Channels require post format",
             },
         ))
     }
@@ -405,11 +403,13 @@ impl ProviderAdapter for WhatsAppAdapter {
         }
         Ok(ProviderCapabilities {
             provider_id: self.provider_id.clone(),
-            revision: Some(match destination {
-                WhatsAppDestinationKind::Individual => "whatsapp-cloud.individual-text-v1",
-                WhatsAppDestinationKind::Channel => "whatsapp-channel.text-v1",
-            }
-            .to_owned()),
+            revision: Some(
+                match destination {
+                    WhatsAppDestinationKind::Individual => "whatsapp-cloud.individual-text-v1",
+                    WhatsAppDestinationKind::Channel => "whatsapp-channel.text-v1",
+                }
+                .to_owned(),
+            ),
             formats: BTreeSet::from([Self::expected_format(destination)]),
             text: TextCapabilities {
                 supported: true,
@@ -763,11 +763,16 @@ mod tests {
     async fn direct_target_advertises_message_only() {
         let (adapter, _) = adapter(WhatsAppDestinationKind::Individual);
         let capabilities = adapter
-            .capabilities(&ProviderTargetContext::from(&request(PublicationFormat::Message).target))
+            .capabilities(&ProviderTargetContext::from(
+                &request(PublicationFormat::Message).target,
+            ))
             .await
             .expect("capabilities");
 
-        assert_eq!(capabilities.formats, BTreeSet::from([PublicationFormat::Message]));
+        assert_eq!(
+            capabilities.formats,
+            BTreeSet::from([PublicationFormat::Message])
+        );
         assert!(!capabilities.formats.contains(&PublicationFormat::Post));
     }
 
@@ -775,11 +780,16 @@ mod tests {
     async fn channel_target_advertises_post_only() {
         let (adapter, _) = adapter(WhatsAppDestinationKind::Channel);
         let capabilities = adapter
-            .capabilities(&ProviderTargetContext::from(&request(PublicationFormat::Post).target))
+            .capabilities(&ProviderTargetContext::from(
+                &request(PublicationFormat::Post).target,
+            ))
             .await
             .expect("capabilities");
 
-        assert_eq!(capabilities.formats, BTreeSet::from([PublicationFormat::Post]));
+        assert_eq!(
+            capabilities.formats,
+            BTreeSet::from([PublicationFormat::Post])
+        );
         assert!(!capabilities.formats.contains(&PublicationFormat::Message));
     }
 
