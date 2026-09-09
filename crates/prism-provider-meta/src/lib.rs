@@ -12,6 +12,7 @@ pub mod facebook;
 pub mod instagram;
 pub mod whatsapp;
 
+pub(crate) use common::{classify_graph_error, validated_api_base};
 pub use common::{
     MetaAccessToken, MetaExternalId, MetaNumericId, MetaTransportConfigError, MetaTransportError,
     MetaTransportErrorKind, MetaValueError, PublicMediaUrl,
