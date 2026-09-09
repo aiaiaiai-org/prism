@@ -345,7 +345,7 @@ impl WhatsAppAdapter {
         ))
     }
 
-    fn text<'a>(request: &'a ProviderPublishRequest) -> Result<&'a str, DeliveryError> {
+    fn text(request: &ProviderPublishRequest) -> Result<&str, DeliveryError> {
         request
             .variant
             .body
