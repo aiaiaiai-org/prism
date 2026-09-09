@@ -14,14 +14,16 @@ All notable Prism changes are documented here. The format follows [Keep a Change
 - Canonical aiaiaiai copyright notices and automated policy validation.
 - Architecture, ecosystem, status, licensing, security, contribution, and content-variant documentation.
 - Text-only official Threads adapter with injected channel and credential resolution, redacted HTTP transport, capability snapshot, and fixture-based tests.
-- `prism-provider-meta` with separate Instagram single-image feed, Facebook Page text, and WhatsApp Business individual text-message adapters.
+- `prism-provider-meta` with separate Instagram single-image feed, Facebook Page text, and WhatsApp Business direct-message delivery.
 - Portable `message` publication format for recipient-addressed delivery such as WhatsApp.
+- Target-specific WhatsApp Channel text posts behind an injected `WhatsAppChannelPublisher`, while direct messages remain on the official Cloud API transport.
 - Redacted Meta access tokens, signed-media URLs, Graph API error mapping, and provider-specific binding/transport boundaries.
 - `outcome_unknown` for external actions that may have succeeded and must be reconciled before retry.
 - Locked dependencies and a Rust 1.85 minimum-supported-version gate.
 
 ### Changed
 
+- WhatsApp `meta.whatsapp` capabilities are destination-specific: individual targets advertise `message`; Channel targets advertise `post`.
 - Target idempotency material is collision-free and versioned as `prism-idempotency.v1`.
 - Delivery errors may include namespaced safe recovery details, such as a Threads or Instagram container ID after an ambiguous publish response.
 - Canonical repository metadata uses `aiaiaiai-org/prism`.
@@ -29,6 +31,7 @@ All notable Prism changes are documented here. The format follows [Keep a Change
 
 ### Migration
 
+- Applications enabling WhatsApp Channel delivery must configure `WhatsAppDestinationResolver` and `WhatsAppChannelPublisher`; existing `WhatsAppAdapter::new(...)` remains direct-message only.
 - Consumers that exhaustively match `DeliveryErrorClass` must handle `outcome_unknown` and block automatic retry until provider state is reconciled.
 - Consumers that exhaustively match `PublicationFormat` must handle the new `message` variant. The `prism-execution.v1` protocol remains versioned independently from crate releases.
 - Consumers that persisted the previous `root:target` idempotency string must migrate to `prism-idempotency.v1`. Protocol versions remain independent from crate versions.
