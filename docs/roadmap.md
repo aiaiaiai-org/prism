@@ -44,7 +44,7 @@ Implementation state for the hub is tracked in its own repository.
 
 ## 5 — reporting and peer integrations (`planned`)
 
-Add optional archive, metrics, and reporting modules. HQBase mail integration uses the public HQBase API through a hub adapter. Client-domain concepts stay outside Prism core.
+Add optional archive, metrics, and reporting modules. Mail intelligence lives in `prism-mail`; HQBase is its current mail source behind focused source ports, and `prism-hub` consumes the resulting versioned artifacts. Client-domain concepts stay outside Prism core.
 
 ## Deferred decisions
 

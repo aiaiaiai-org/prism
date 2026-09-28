@@ -9,17 +9,21 @@ Prism is one product in a larger family. Repository boundaries are ownership bou
 | `prism-bot` | Telegram and future messaging clients | Generated hub API client |
 | `prism-panel` | Planned web administration client | Generated hub API client |
 | `prism-ai` | Optional content-variant generation | Hub-owned generation port |
-| HQBase | Independent mail product | HQBase public Mail API |
+| `prism-mail` | Mail intelligence: normalized mail evidence, deterministic digest and signal artifacts | Focused mail-source ports; versioned artifacts such as `prism-mail.digest.v1` |
+| `prism-porter` | Provider-neutral routing and presentation of versioned artifacts into delivery intents | Versioned artifacts and hub-owned logical contexts |
+| HQBase | Independent mail product with its own repository | HQBase public Mail API, consumed by a `prism-mail` source adapter |
 | infrastructure | Hosts, secrets wiring, databases, storage, DNS, TLS, backups | Versioned application artifacts |
 
 ## Dependency direction
 
-- Clients depend on `prism-hub`, never on Prism, `prism-ai`, or provider APIs.
+- Clients depend on `prism-hub`, never on Prism, `prism-ai`, `prism-mail`, or provider APIs.
 - `prism-hub` invokes Prism through the versioned execution boundary.
 - `prism-hub` may invoke `prism-ai` through an optional generation port.
 - `prism-ai` returns explicit `ContentVariant` values with provenance and never publishes directly.
+- `prism-hub` invokes `prism-mail` and consumes its versioned artifacts. The hub owns mailbox authorization, token lifecycle, scheduling, and delivery; `prism-mail` never calls clients or transports directly.
+- `prism-mail` reads mail through focused source adapters. HQBase is the current source; Proton, Gmail, and other providers are planned adapters behind the same ports, not reasons to branch the product core.
+- HQBase integration belongs in a `prism-mail` source adapter using the public HQBase API. Neither Prism nor `prism-hub` reads mail from HQBase directly.
 - Infrastructure consumes versioned artifacts and documented runtime contracts.
-- HQBase integration belongs in a hub adapter using the public HQBase API.
 
 ## Human identity notation
 
@@ -27,7 +31,7 @@ Prism does not own human-identifier syntax or allocation. If a Hub or client use
 
 ## Forbidden coupling
 
-- Prism importing hub, client, ai, HQBase, or infrastructure internals;
+- Prism importing hub, client, ai, mail, HQBase, or infrastructure internals;
 - shared mutable application databases between products;
 - direct access to another product's tables or browser cookies;
 - provider tokens in bot or panel clients;
